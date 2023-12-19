@@ -13,9 +13,9 @@ import * as progresscalculation from './progresscalculation'
 import { checkResearch, researchList } from "./alpha/AlphaResearchHelper";
 import { autoBuyStarlightUpgrades } from "./destiny/DestinyWelcomeTab";
 
-export const majorversion = 1
-export const version = "1.16"
-export const productive = true
+export const majorversion = 2
+export const version = "2.00d"
+export const productive = false
 export var invitation = "efHyDkqGRZ"
 
 export const newSave = {
