@@ -12,7 +12,8 @@ export const startingStones = {
         id: "BadEndings",
         title: "Breaking Maths",
         description: <>Reach three distinct Bad Endings</>,
-        check: (state=>(state.badEndingCount >= 3)),
+        description_alt: <>Reach any Bad Ending</>,
+        check: (state=>(state.badEndingCount >= 3 || (state.progressionLayer > 1 && state.badEndingCount >=1))),
     },
     "StartingValue":{
         id: "StartingValue",
@@ -37,6 +38,7 @@ export const startingStones = {
         id: "AllChallenges",
         title: "Challenger",
         description: <>Complete all Challenges</>,
+        description_alt: <>Complete 13 Challenges</>,
         check: (state)=>(getChallengeBonus(state).full >= 13),
     },
     "VeryAlpha":{
@@ -49,13 +51,15 @@ export const startingStones = {
         id: "MaxResearch",
         title: "Ultimate Scientist",
         description: <>Get all Research Bars to Level 2500</>,
-        check: (state)=>(state.researchLevel["x"] >= 2500 && state.researchLevel["x'"] >= 2500 && state.researchLevel["x''"] >= 2500 && state.researchLevel["x'''"] >= 2500),
+        description_alt: <>Get a total Research Level of 10000</>,
+        check: (state)=>(state.researchLevel["x"] + state.researchLevel["x'"] + state.researchLevel["x''"] + state.researchLevel["x'''"] >= 10000),
     },
     "AllUpgrades":{
         id: "AllUpgrades",
         title: "Upgrade Complete",
         description: <>Buy everything on the Alpha Upgrades Tab</>,
-        check: (state)=>(countAlphaUpgrades(state)>=12 && state.autoApplyLevel >= 2 && state.baseAlphaLevel >= 12),
+        description_alt: <>Buy all Alpha Upgrades and upgrade Base Tokens to 4096</>,
+        check: (state)=>(countAlphaUpgrades(state)>=12 && state.baseAlphaLevel >= 12),
     },
 }
 

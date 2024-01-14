@@ -38,7 +38,7 @@ export default function OptionScreen({state, popup, updateState, setTotalClicks}
     const element = document.createElement("a")
     const file = new Blob([encodedState], {type: 'text/plain'})
     element.href = URL.createObjectURL(file)
-    element.download = "IdleFormulas"
+    element.download = "IdleFormulas.txt"
     document.body.appendChild(element)
     element.click()
     element.remove()
@@ -138,7 +138,7 @@ export default function OptionScreen({state, popup, updateState, setTotalClicks}
           description="Offline Progress" tooltip="Controls whether the game calculates progress for offline/inactive time" tooltipList={["Always get offline progress","No offline progress upon load, but inactive periods (minimized tab etc) are considered", "No offline progress, not even after inactive (minimized tab etc) periods of 2+ minutes"]}/> */}
       </p>
       {(state.destinyStars > 1 || state.progressionLayer > 0) && <p>
-        {spaces()}<DropdownOptionButton settingName="headerDisplay" statusList={["X","ALPHA",state.destinyStars > 1 && "STARS",state.destinyStars > 1 && "STARLIGHT", "VERTICAL", "HORIZONTAL", "OFF"].filter((x)=>x)} state={state} updateState={updateState} setTotalClicks={setTotalClicks}
+        {spaces()}<DropdownOptionButton settingName="headerDisplay" statusList={["X","ALPHA", state.progressionLayer >=2 && state.essence, state.progressionLayer >=3 && state.energy,state.destinyStars > 1 && "STARS",state.destinyStars > 1 && "STARLIGHT", "VERTICAL", "HORIZONTAL", "OFF"].filter((x)=>x)} state={state} updateState={updateState} setTotalClicks={setTotalClicks}
           description="Header Display" tooltip="Controls display at the top of the site"/>
       </p>}
       <p>
@@ -213,6 +213,10 @@ export default function OptionScreen({state, popup, updateState, setTotalClicks}
           {spaces()}<MultiOptionButton settingName="exitChallengePopup" statusList={["ON","OFF"]} state={state} updateState={updateState} setTotalClicks={setTotalClicks}
             description="Exit Challenge Pop-Up" tooltip="Controls whether the confirmation popup for exiting Challenges is shown" tooltipList={["Show popup","Do not show popup"]}/>
         </p>}
+        {(state.destinyStars > 1 || state.progressionLayer > 1) && <p>
+          {spaces()}<MultiOptionButton settingName="worldResetPopup" statusList={["ON","OFF"]} state={state} updateState={updateState} setTotalClicks={setTotalClicks}
+            description="World-Reset Pop-Up" tooltip="Controls whether the confirmation popup for World-Resets is shown" tooltipList={["Show popup","Do not show popup"]}/>
+        </p>}
       </details>
       <br/>
       <details>
@@ -252,7 +256,7 @@ export default function OptionScreen({state, popup, updateState, setTotalClicks}
       </details>
 
 
-      {state.xValue[0] === 0 && state.mileStoneCount === 0 && (window.location.href.split("/").pop() === "?newgame") &&<p>
+      {state.xValue[0] === 0 && state.mileStoneCount === 0 && ((window.location.href.split("/").pop() === "?newgame")||!productive) &&<p>
         {spaces()}<button onClick={chapterJump}>Chapter Jump</button>
       </p>}
       <br/>

@@ -32,7 +32,13 @@ export const applyFormulaToState = (state, formula, forceApply, silent, multiApp
         const limitActive = state.activeChallenges.LIMITED || state.activeChallenges.SINGLEUSE
         const applyTimes = (multiApply && !formula.isStatic && !limitActive) ? Math.floor(Math.min(getGlobalMultiplier(state), maxApplyTimes)) : 1
         const efficiency = state.formulaEfficiency[formula.targetLevel] * applyTimes
-        state.xValue[formula.targetLevel] = formula.applyFormula(efficiency, state.xValue, state)
+        const newValue2 = formula.applyFormula(efficiency, state.xValue, state)
+
+        if (newValue2 > state.xValue[formula.targetLevel] && state.activeChallenges.EVILROOT) {
+          state.xValue[formula.targetLevel] = state.xValue[formula.targetLevel] + Math.floor(Math.sqrt(newValue2 - state.xValue[formula.targetLevel])) 
+        } else {
+          state.xValue[formula.targetLevel] = newValue2
+        }
         if (state.activeChallenges.RESETOTHER) {
             state.xValue = state.xValue.map((v,i)=>(i === formula.targetLevel ? v : 0))
         }

@@ -47,14 +47,16 @@ export const getCumulResearchInfo = (state,researchList)=>{
     const oneSecondBulk = isDone ? reverseGeometric(1, research.durationBase, progressMultiplier / goal) : 0 //Theoretical Research Levels in 1 Second
     const adjustedBulk = oneSecondBulk > getGlobalMultiplier(state) ? Math.pow(oneSecondBulk / getGlobalMultiplier(state), 0.3) * getGlobalMultiplier(state) : oneSecondBulk
     const bulkAmount = isDone ? clamp(1, Math.floor(adjustedBulk), leftToMaxx) : 0
-    //const progressBarWidth = isDone ? "100%" : Math.min(100 * percentage,99).toFixed(2) + "%"
-  
+    
+    const perfectBulk = isDone ? reverseGeometric(1, research.durationBase, progress / goal) : 0 //Theoretical Research Levels since last claim
+    const perfectBulkAmount = isDone ? clamp(1, Math.floor(perfectBulk), leftToMaxx) : 0
+    
     return {
       researchLevel,
       isDone,
       remainingTime,
-      bulkAmount,
+      bulkAmount : state.worldPerks.PBUL ? perfectBulkAmount : bulkAmount,
       percentage,
-      isBlocked: !researchLevel || researchLevel >= 2500,
+      isBlocked: (!researchLevel && state.progressionLayer <=1) || researchLevel >= 2500,
     }
   }

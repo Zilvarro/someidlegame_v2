@@ -12,17 +12,24 @@ import * as eventsystem from './mails/MailEventSystem'
 import * as progresscalculation from './progresscalculation'
 import { checkResearch, researchList } from "./alpha/AlphaResearchHelper";
 import { autoBuyStarlightUpgrades } from "./destiny/DestinyWelcomeTab";
+import { alphaUpgradeDictionary, autoAlphaUpgrades } from "./alpha/AlphaUpgradeDictionary";
+import { alphaChallengeDictionary, alphaChallengeTable, calcChallengePower, trivialStartChallenges } from "./alpha/AlphaChallengeTab";
+import { getCrystalChargeInfo, getCrystalChargeSpeed, getCrystalEffectUpgradeCost, getCrystalMultiplier, getCrystalSpeedUpgradeCost } from "./world/WorldCrystalTab";
+import { worldPerkDeck } from "./world/WorldPerkDictionary";
 
-export const majorversion = 2
+export const majorversion = "2d"
 export const version = "2.00d"
 export const productive = false
 export var invitation = "efHyDkqGRZ"
 
 export const newSave = {
     version: version,
+    productive: productive,
     progressionLayer: 0,
     selectedTabKey: "FormulaScreen",
     selectedAlphaTabKey: "AlphaUpgradeTab",
+    selectedWorldTabKey: "WorldPerkTab",
+    selectedVoidTabKey: "VoidSkillTab",
     xValue: [0,0,0,0],
     avgXPerSecond: [0,0,0,0],
     xPerSecond: [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
@@ -39,8 +46,7 @@ export const newSave = {
     decreaseCooldown: false,
     myFormulas: [],
     autoApply: [false,false,false,false,false],
-    autoApplyLevel: 0,
-    autoApplyRate: 2,
+    autoApplyRate: 10,
     equipLayouts: [[[],[],[],[]],[[],[],[],[]],[[],[],[],[]]],
     shopFavorites: [{},{},{},{}], //-1: hidden // 1: favorite // undefined: normal
     selectedLayout: 0,
@@ -49,6 +55,8 @@ export const newSave = {
     formulaUnlockCount: 0,
     formulaApplyCount: 0,
     alpha: 0,
+    essence: 0,
+    energy: 0,
     destinyStars: 0,
     starLight: 0,
     lightAdder: 0,
@@ -60,6 +68,14 @@ export const newSave = {
     idleMultiplier: 1,
     boughtAlpha: [false,false],
     alphaUpgrades: {},
+    alphaUpgradesBought: {},
+    worldPerks: {},
+    worldPerksAvailable: ["NULL","NULL","NULL"],
+    perkCardsDrawn: 0,
+    canBuyPerk: true,
+    noStoneUsed: true,
+    noStoneWorldReset: false,
+    worldResetEnabled: false,
     autoUnlockIndex: 0,
     saveTimeStamp: 0,
     calcTimeStamp: 0,
@@ -82,8 +98,10 @@ export const newSave = {
     justLaunched: true,
     lastPlayTime: 0,
     currentAlphaTime: 0,
+    currentWorldTime: 0,
     isFullyIdle: true,
     bestAlphaTime: 1e100,
+    bestWorldTime: 1e100,
     bestIdleTime: 1800e3,
     bestIdleTimeAlpha: 1,
     passiveAlphaTime: 0,
@@ -94,6 +112,7 @@ export const newSave = {
     currentChallengeTime: 0,
     activeChallenges: {},
     clearedChallenges: {},
+    trivialChallengesCleared: false,
     challengeProgress: {},
     researchStartTime: {},
     researchLevel: {},
@@ -103,6 +122,15 @@ export const newSave = {
     startingStoneX: 0,
     clearedTimewall: false,
     baseAlphaLevel: 0,
+    baseEssenceLevel: 0,
+    activeCrystals: {},
+    crystalMultipliers: {},
+    activeCrystalCap: 1,
+    chargeCapLevel: 0,
+    activeCrystalCount: 0,
+    crystalExp: 0,
+    crystalEffectLevel: 0,
+    crystalSpeedLevel: 0,
     currentEnding: "",
     completedEndings: {},
     allTimeEndings: {},
@@ -141,6 +169,7 @@ export const newSave = {
         autoRemembererActive: "ON",
         shopResetPopup: "ON",
         alphaResetPopup: "ON",
+        worldResetPopup: "ON",
         alphaAbortPopup: "DOUBLE",
         memorizePopup: "ON",
         exitChallengePopup: "ON",
@@ -158,6 +187,7 @@ export const newSave = {
 
 export const differentialTargets = [20e3,20e9,20e21,Infinity]
 export const alphaTarget = 20e33
+export const crystalStart = 100
 const alphaThresholds = {
     "MINIMUM": alphaTarget,
     "1e40": 1e40,
@@ -212,16 +242,22 @@ export const loadGame = ()=>{
 }
 
 export const getStartingX = (state)=>{
+    const crystalBonus = getCrystalMultiplier(state,"X")
+    if (state.activeChallenges.TRUEBETA) return 0
     const fromStartingStones = Math.max(state.startingStoneX, 1)
     const fromResearch = Math.floor(100*Math.pow(1.01, state.researchLevel["x"] || 0)-100);
-    return fromStartingStones * fromResearch
+    const startx = fromStartingStones * fromResearch * crystalBonus
+    return state.activeChallenges.EVILROOT ? Math.sqrt(startx) : startx
 }
 
 export const getInventorySize = (state)=>{
     if (state.activeChallenges.SMALLINV)
         return 1
-    else
-        return state.alphaUpgrades.SLOT ? 4 : 3
+    else {
+      const alphaslot = state.alphaUpgrades.SLOT ? 1 : 0
+      const worldslot = state.worldPerks.WSLO ? 1 : 0
+      return 3 + alphaslot + worldslot
+    }
 }
 
 export const getGlobalMultiplier = (state)=>{
@@ -303,7 +339,57 @@ const performAlphaReset = (state)=>{
     state.currentChallengeTime = 0
     state.isFullyIdle = true
     state.activeChallenges = {}
+    state.alphaUpgrades = {...state.alphaUpgradesBought}
     return state
+}
+
+const performWorldReset = (state)=>{
+  if (state.noStoneUsed)
+    state.noStoneWorldReset = true
+  state.bestWorldTime = Math.min(state.bestWorldTime, state.currentWorldTime)
+  state.essence++
+  
+  state.currentWorldTime = 0
+  state.alpha = 0
+  state.alphaUpgrades = {}
+  state.alphaUpgradesBought = {}
+  state.researchStartTime = {}
+  state.researchLevel = {}
+  state.startingStoneTurned = {}
+  state.startingStoneLevel = {}
+  state.trivialChallengesCleared = false
+  state.xHighScores = newSave.xHighScores.slice()
+  state.formulaGodScores = newSave.formulaGodScores.slice()
+  state.canBuyPerk = true
+  state.noStoneUsed = true
+  state.worldResetEnabled = false
+
+  state.bestAlphaTime = 1e100
+  state.bestIdleTime = 1800e3
+  state.bestIdleTimeAlpha = 1
+  state.passiveAlphaTime = 0
+  state.passiveAlphaInterval = 1e100
+  state.insideChallenge = false
+  state.currentChallenge = null
+  state.currentChallengeName = null
+  state.currentChallengeTime = 0
+  state.activeChallenges = {}
+  state.clearedChallenges = {}
+  state.trivialChallengesCleared = false
+  state.challengeProgress = {}
+  state.researchStartTime = {}
+  state.researchLevel = {}
+  state.startingStoneTurned = {}
+  state.startingStoneLevel = {}
+  state.startingStoneX = 0
+  state.clearedTimewall = false
+  state.baseAlphaLevel = 0
+
+  performAlphaReset(state)
+  performShopReset(state)
+  state = updateProductionBonus(state)
+  state = updateFormulaEfficiency(state)
+  return state
 }
 
 const giveAlphaRewards = (state)=>{
@@ -335,6 +421,12 @@ const giveAlphaRewards = (state)=>{
         }
         state = updateFormulaEfficiency(state)
     } else {
+
+        //Autoclear for Master of Idle Challenge
+        if (state.worldPerks.ACHA && state.isFullyIdle) {
+          state.clearedChallenges.FULLYIDLE = true
+          state.challengeProgress.FULLYIDLE = 4
+        }
 
         //Passive Alpha from Master of Idle
         if (state.isFullyIdle && state.clearedChallenges.FULLYIDLE) {
@@ -414,13 +506,32 @@ const upgradeXTier = (state)=>{
         state.challengeProgress[state.currentChallenge] = Math.max(state.challengeProgress[state.currentChallenge] || 0,state.highestXTier)
         state = updateFormulaEfficiency(state)
     }
+
+    //Autoclear master of idle segments
+    if (state.worldPerks.ACHA && state.isFullyIdle) {
+      state.challengeProgress.FULLYIDLE = Math.max(state.challengeProgress.FULLYIDLE || 0, state.highestXTier)
+    }
+
+    //Autoclear trivial challenge segments
+    if (state.worldPerks.ACHA && !state.trivialChallengesCleared && state.highestXTier === 1) {
+      trivialStartChallenges.forEach(challenge => {
+        state.challengeProgress[challenge] ||= 1
+      });
+      state.trivialChallengesCleared = true
+      state = updateFormulaEfficiency(state)
+    }
     return state
 }
 
 const updateProductionBonus = (state)=>{
-    state.productionBonus[0] = Math.pow(1.01, state.researchLevel["x'"] || 0 )
-    state.productionBonus[1] = Math.pow(1.01, state.researchLevel["x''"] || 0)
-    state.productionBonus[2] = Math.pow(1.01, state.researchLevel["x'''"] || 0)
+    const crystalBonus = getCrystalMultiplier(state,"P")
+    if (state.activeChallenges.TRUEBETA){
+      state.productionBonus = [crystalBonus,crystalBonus,crystalBonus,crystalBonus]
+      return state
+    }
+    state.productionBonus[0] = Math.pow(1.01, state.researchLevel["x'"] || 0 )*crystalBonus
+    state.productionBonus[1] = Math.pow(1.01, state.researchLevel["x''"] || 0)*crystalBonus
+    state.productionBonus[2] = Math.pow(1.01, state.researchLevel["x'''"] || 0)*crystalBonus
     return state
 }
 
@@ -458,10 +569,43 @@ export const getMaxxedResearchBonus = (state)=>{
 }
 
 const updateFormulaEfficiency = (state)=>{
+    const crystalBonus = getCrystalMultiplier(state,"E")
+    if (state.activeChallenges.TRUEBETA){
+      state.formulaEfficiency = [crystalBonus,crystalBonus,crystalBonus,crystalBonus]
+      return state
+    }
     const challengeBonus = getChallengeBonus(state).bonus
     const researchBonus = getMaxxedResearchBonus(state).bonus
-    state.formulaEfficiency = [challengeBonus * researchBonus,challengeBonus * researchBonus,challengeBonus * researchBonus,challengeBonus * researchBonus]
+    state.formulaEfficiency = [challengeBonus * researchBonus * crystalBonus,challengeBonus * researchBonus * crystalBonus,challengeBonus * researchBonus* crystalBonus,challengeBonus * researchBonus * crystalBonus]
     return state
+}
+
+const researchAll = (state)=>{
+  let totalGains = 0
+    for (const researchName of researchList) {
+        const researchInfo = checkResearch(state,researchName)
+        if (!researchInfo.isBlocked && researchInfo.isDone) {
+            const previousLevel = state.researchLevel[researchName]
+            state.researchStartTime[researchName] = Date.now()
+            state.researchLevel[researchName] = Math.min(2500, (state.researchLevel[researchName] || 0) + researchInfo.bulkAmount)
+            totalGains += state.researchLevel[researchName] - previousLevel
+        }
+    }
+    state = updateProductionBonus(state)
+    state = updateFormulaEfficiency(state)
+  return totalGains
+}
+
+// eslint-disable-next-line no-unused-vars
+const startDestinyLayer = (state)=>{
+  state.progressionLayer = 4
+  state.destinyEndTimeStamp = Date.now()
+  if (state.destinyStartTimeStamp > 0)
+      state.destinyRecordMillis = Math.min(state.destinyRecordMillis, state.destinyEndTimeStamp - state.destinyStartTimeStamp)
+  state.mailsForCheck.push("Destiny")
+  notify.success("DESTINY", "You finished the game!")
+  performAlphaReset(state)
+  performShopReset(state)
 }
 
 export const saveReducer = (state, action)=>{
@@ -470,17 +614,12 @@ export const saveReducer = (state, action)=>{
     case "idle":
         if (action.playTime === state.lastPlayTime) break
 
-        //Mitigation Research All Button for savefiles created before v1.08
-        if (state.version !== version && !state.mitigation108) {
-            state.mitigation108 = true
-            if (state.mailsCompleted["Challenges"] !== undefined) {
-                state.mailsForCheck.push("ResearchAllIdea")
-            }
-        }
+        state.productive = state.productive && productive
 
         state.lastPlayTime = action.playTime
         const timeStamp = Date.now()
         let deltaMilliSeconds = Math.max(timeStamp - state.calcTimeStamp, 0)
+        state.currentWorldTime += deltaMilliSeconds
 
         const xValuesBefore = state.xValue.map(x=>x)
 
@@ -514,7 +653,8 @@ export const saveReducer = (state, action)=>{
             for(let i=1; i<state.xValue.length; i++) {
                 //Close to 0 does not produce
                 if (Math.abs(state.xValue[i]) >= 0.5) {
-                    state.xValue[i-1]+= deltaMilliSeconds * state.productionBonus[i-1] *challengeMultiplier * getGlobalMultiplier(state) * state.xValue[i] / 1000
+                    const prodPerSecond = state.productionBonus[i-1] *challengeMultiplier * getGlobalMultiplier(state) * state.xValue[i]
+                    state.xValue[i-1]+= (state.activeChallenges.EVILROOT ? Math.sqrt(prodPerSecond) : prodPerSecond) * deltaMilliSeconds / 1000
                 }
             }
 
@@ -674,12 +814,19 @@ export const saveReducer = (state, action)=>{
 
         //Passive Alpha from Upgrade
         if (state.alphaUpgrades.PALP) {
-            state.passiveAlphaTime += deltaMilliSeconds
+            const crystalBonus = getCrystalMultiplier(state,"A")
+            state.passiveAlphaTime += deltaMilliSeconds * crystalBonus
             if (state.passiveAlphaTime >= Math.min(state.passiveAlphaInterval, 1000*3600*24)) {
                 state.alpha += Math.floor(state.passiveAlphaTime / state.passiveAlphaInterval)
                 state.passiveAlphaTime %= state.passiveAlphaInterval
             }
         }   
+
+        //Charges for Crystals
+        if (state.mailsCompleted["Crystals"] !== undefined) {
+          const speed = getCrystalChargeSpeed(state)
+          state.crystalExp += deltaMilliSeconds * speed
+        }
 
         //Auto Resetters
         const alphaThreshold = alphaThresholds[state.settings.alphaThreshold] || alphaTarget
@@ -759,12 +906,70 @@ export const saveReducer = (state, action)=>{
             performXReset(state)
             state.currentEnding = "infinite"
         }
+
+        //Auto Upgrader
+        if (state.worldPerks.AUPG){
+          autoAlphaUpgrades.forEach((upgradeName)=>{
+            const upgrade = alphaUpgradeDictionary[upgradeName]
+            if(state.alpha >= upgrade.cost){
+              state.alphaUpgradesBought[upgrade.id] = true
+              if (!state.activeChallenges.TRUEBETA)
+                 state.alphaUpgrades[upgrade.id] = true
+              if (!state.worldPerks.ALPR)
+                state.alpha -= upgrade.cost
+            }
+          })
+
+          const baseAlphaMaxLevel = 12
+          while (state.baseAlphaLevel < baseAlphaMaxLevel && state.alpha >= Math.pow(5,state.baseAlphaLevel + 1)) {
+            state.baseAlphaLevel++
+            if (!state.worldPerks.ALPR)
+              state.alpha -= action.cost
+          }
+        }
+
+        //Auto Challenger (TODO: Account for Advanced Challenges and Formula Efficiency)
+        if (state.worldPerks.ACHA) {
+          const challengeInfo = calcChallengePower(state)
+
+          //Complete Challenges
+          alphaChallengeTable.forEach((challengeId)=>{
+            if (alphaChallengeDictionary[challengeId].isEasy)
+              state.challengeProgress[challengeId] = Math.max(state.challengeProgress[challengeId] || 0, challengeInfo.easyclears)
+            else if (!alphaChallengeDictionary[challengeId].advanced)
+              state.challengeProgress[challengeId] = Math.max(state.challengeProgress[challengeId] || 0, challengeInfo.hardclears)
+
+            if (state.challengeProgress[challengeId] === 4)
+              state.clearedChallenges[challengeId] = true
+          })
+
+          //Update Formula God Highscores (Regular Highscores are not really Challenge Helper's business)
+          for (let i=0; i<4; i++) {
+            //if (challengeInfo.easypower[i] > state.xHighscores[i]) state.xHighscores[i] = challengeInfo.easypower[i]
+            if (challengeInfo.hardclears >= i && challengeInfo.differentials[i] > state.formulaGodScores[i]) state.formulaGodScores[i] = challengeInfo.differentials[i]
+          }
+        }
+
+        //Check for World Reset
+        if (state.xValue[3] === Infinity)
+          state.worldResetEnabled = true
+
+        //Auto Researcher
+        if (state.worldPerks.AURS)
+          researchAll(state)
+
         break;
     case "selectTab":
         state.selectedTabKey = action.tabKey
         break;
     case "selectAlphaTab":
         state.selectedAlphaTabKey = action.tabKey
+        break;
+    case "selectWorldTab":
+        state.selectedWorldTabKey = action.tabKey
+        break;
+    case "selectVoidTab":
+        state.selectedVoidTabKey = action.tabKey
         break;
     case "hardreset":
         state = {...structuredClone(newSave), calcTimeStamp: Date.now(), saveTimeStamp: Date.now(), fileStartTimeStamp: Date.now()};
@@ -853,10 +1058,41 @@ export const saveReducer = (state, action)=>{
         performShopReset(state)
         rememberLoadout(state)
         break;
+    case "worldReset":
+      performWorldReset(state)
+      break;
+    case "getAlpha":
+      state.alpha += action.reward
+      break;
     case "alphaUpgrade":
         if (state.alpha >= action.upgrade.cost) {
-            state.alpha-=action.upgrade.cost
-            state.alphaUpgrades[action.upgrade.id] = true
+            if (!state.worldPerks.ALPR)
+              state.alpha-=action.upgrade.cost
+            state.alphaUpgradesBought[action.upgrade.id] = true
+            if (!state.activeChallenges.TRUEBETA)
+              state.alphaUpgrades[action.upgrade.id] = true
+        }
+        break;
+    case "worldPerk":
+        if (state.essence >= action.upgrade.cost && state.canBuyPerk) {
+          state.worldPerks[action.upgrade.id] = true
+          state.canBuyPerk = false
+        }
+        break;
+    case "drawPerkCard":
+        const index = state.worldPerksAvailable.indexOf("NULL");
+        const newPerk = worldPerkDeck.find((perkId)=>{
+          return !state.worldPerks[perkId] && !state.worldPerksAvailable.includes(perkId)
+        })
+        if (index !== -1 && newPerk) {
+          state.perkCardsDrawn++
+          state.worldPerksAvailable[index] = newPerk;
+        }
+        break;
+    case "addToCollection":
+        const perk = state.worldPerksAvailable[action.index];
+        if (state.worldPerks[perk]) {
+          state.worldPerksAvailable[action.index] = "NULL"
         }
         break;
     case "cheat":
@@ -864,7 +1100,7 @@ export const saveReducer = (state, action)=>{
         state.currentEnding = "true"
         break;
     case "chapterJump":
-        switch (action.password) {
+        switch (action.password) { 
             case "F0RMUL45":
                 notify.success("CHAPTER 1: FORMULAS")
                 break;
@@ -894,6 +1130,44 @@ export const saveReducer = (state, action)=>{
                 state.mailsForCheck = ["Welcome"]
                 state.mailsCompleted["Favorites"] = 0 //Unlocks Shop Filters
                 notify.success("CHAPTER 5: ALPHA")
+                break;
+            case "world":
+                case "":
+                state.essence = 1
+                state.destinyStartTimeStamp = -2
+                state.mileStoneCount = 12
+                state.progressionLayer = 2
+                state.mailsForCheck = ["World"]
+                state.mailsCompleted["Favorites"] = 0 //Unlocks Shop Filters
+                state.mailsCompleted["Research"] = 0 
+                state.mailsCompleted["Challenges"] = 0 
+                state.mailsCompleted["Stones"] = 0 
+                notify.success("CHAPTER 6: WORLD")
+                break;
+            case "void":
+                state.energy = 1
+                state.destinyStartTimeStamp = -2
+                state.mileStoneCount = 18
+                state.progressionLayer = 3
+                state.mailsForCheck = ["Welcome"]
+                state.mailsCompleted["Favorites"] = 0 //Unlocks Shop Filters
+                state.mailsCompleted["Perks"] = 0 
+                state.mailsCompleted["Crystals"] = 0 
+                state.mailsCompleted["Rituals"] = 0 
+                notify.success("CHAPTER 7: VOID")
+                break;
+            case "destiny":
+                state.destinyStars = 1
+                state.progressionLayer = 4
+                state.mileStoneCount = 24
+                state.mailsForCheck = ["World"]
+                state.mailsCompleted["Crystals"] = 0 
+                state.mailsCompleted["Rituals"] = 0 
+                state.mailsCompleted["Favorites"] = 0 
+                state.mailsCompleted["Research"] = 0 
+                state.mailsCompleted["Challenges"] = 0 
+                state.mailsCompleted["Stones"] = 0 
+                notify.success("ENDGAME: DESTINY")
                 break;
             case "D3571NY574R":
                 state.destinyStartTimeStamp = -1
@@ -980,6 +1254,8 @@ export const saveReducer = (state, action)=>{
         if (state.settings.challengeTabSwitch === "ON") {
             state.selectedTabKey = "FormulaScreen"
         }
+        if (action.challenge.id === "TRUEBETA")
+          state.alphaUpgrades = {}
         break;
     case "exitChallenge":
         performAlphaReset(state)
@@ -993,33 +1269,26 @@ export const saveReducer = (state, action)=>{
         state = updateFormulaEfficiency(state)
         break;
     case "researchAll":
-        let totalGains = 0
-        for (const researchName of researchList) {
-            const researchInfo = checkResearch(state,researchName)
-            if (!researchInfo.isBlocked && researchInfo.isDone) {
-                const previousLevel = state.researchLevel[researchName]
-                state.researchStartTime[researchName] = Date.now()
-                state.researchLevel[researchName] = Math.min(2500, (state.researchLevel[researchName] || 0) + researchInfo.bulkAmount)
-                totalGains += state.researchLevel[researchName] - previousLevel
-            }
-        }
-        state = updateProductionBonus(state)
-        state = updateFormulaEfficiency(state)
+        const totalGains = researchAll(state)
         if(action.showNotification && totalGains === 1)
             notify.success("Research Successful", "1 Research Level Gained")
         else if(action.showNotification && totalGains > 1)
             notify.success("Research Successful", totalGains.toFixed(0) + " Research Levels Gained")
         break;
-    case "upgradeApplierRate":
-        state.alpha -= action.cost
-        state.autoApplyLevel = action.level
-        state.autoApplyRate = action.rate
-        break;
     case "upgradeBaseAlpha":
-        state.alpha -= action.cost
-        state.baseAlphaLevel = action.level
+        const baseAlphaUpgradeCost = Math.pow(5,state.baseAlphaLevel + 1)
+        if (state.alpha < baseAlphaUpgradeCost) break
+        state.alpha -= baseAlphaUpgradeCost
+        state.baseAlphaLevel++
+        break;
+    case "upgradeBaseEssence":
+        const baseEssenceUpgradeCost = Math.pow(8,state.baseEssenceLevel + 1)
+        if (state.essence < baseEssenceUpgradeCost) break
+        state.essence -= baseEssenceUpgradeCost
+        state.baseEssenceLevel++
         break;
     case "incrementStone":
+        state.noStoneUsed = false
         state.startingStoneLevel[action.stone.id] ||= 0
         state.startingStoneLevel[action.stone.id]++
         state.startingStoneX = calcStoneResultForX(state,stoneTable)
@@ -1047,15 +1316,9 @@ export const saveReducer = (state, action)=>{
         if (isNew && action.endingName !== "world" && endingList[action.endingName]?.titlestring)
             notify.success("Ending Completed", endingList[action.endingName].titlestring)
         state.currentEnding = ""
-        if ((action.endingName === "world" || (action.endingName === "true" && state.destinyStars > 1)) && state.progressionLayer < 2) {
+        if (action.endingName === "world" && state.progressionLayer < 2) {
             state.progressionLayer = 2
-            state.destinyEndTimeStamp = Date.now()
-            if (state.destinyStartTimeStamp > 0)
-                state.destinyRecordMillis = Math.min(state.destinyRecordMillis, state.destinyEndTimeStamp - state.destinyStartTimeStamp)
-            state.mailsForCheck.push("Destiny")
-            notify.success("DESTINY", "You finished the game!")
-            performAlphaReset(state)
-            performShopReset(state)
+            performWorldReset(state)
         } else if (action.endingName === "good" || action.endingName === "evil" || action.endingName === "true" || action.endingName === "skipped" || action.endingName === "world") {
             performAlphaReset(state)
             performShopReset(state)
@@ -1114,6 +1377,47 @@ export const saveReducer = (state, action)=>{
         break;
     case "unlockMail":
         eventsystem.unlockMail(state, action.mailid)
+        break;
+    case "toggleCrystal":
+        const chargeInfo = getCrystalChargeInfo(state)
+        if (chargeInfo.charges < 1) break
+
+        state.crystalMultipliers[action.crystal] ||= crystalStart
+        state.crystalMultipliers[action.crystal] += chargeInfo.charges
+        if (state.activeCrystals[action.crystal]) {
+          state.activeCrystalCount--
+          state.activeCrystals[action.crystal] = false
+        }
+        else {
+          if (state.activeCrystalCount >= state.activeCrystalCap)
+            state.activeCrystals = {}
+          state.activeCrystalCount++
+          state.activeCrystals[action.crystal] = true
+        }
+        state.crystalExp = 0
+        state = updateProductionBonus(state)
+        state = updateFormulaEfficiency(state)
+        break;
+    case "upgradeChargeCap":
+        const chargeInfo2 = getCrystalChargeInfo(state)
+        if (!chargeInfo2.capped) break
+
+        state.crystalExp = 0
+        state.chargeCapLevel++
+        break;
+    case "upgradeChargeSpeed":
+        const acost = getCrystalSpeedUpgradeCost(state)
+        if (state.alpha < acost) break
+
+        state.alpha -= acost
+        state.crystalSpeedLevel++
+        break;
+    case "upgradeCrystalEffect":
+        const xcost = getCrystalEffectUpgradeCost(state)
+        if (state.inNegativeSpace || state.xValue[0] < xcost) break
+
+        state.xValue[0] -= xcost
+        state.crystalEffectLevel++
         break;
     default:
         console.error("Action " + action.name + " not found.")

@@ -34,8 +34,12 @@ export default function AlphaChallengeButton({state, challenge, popup, updateSta
         verticalAlign: "top",
     }
 
+    //Unavailable
+    if (challenge.advanced && !state.worldPerks.NCHA)
+      return undefined
+
     //Locked
-    if (challenge.requirement && challenge.requirement > getChallengeBonus(state).full) {
+    if (state.progressionLayer <= 1 && challenge.requirement && challenge.requirement > getChallengeBonus(state).full) {
         return (
             <button disabled={true} style={buttonStyle}>{challenge.title}<br/><br/>Complete {challenge.requirement} Challenges to Unlock<br/><br/>Locked</button>
         )

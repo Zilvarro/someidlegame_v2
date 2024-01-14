@@ -1,7 +1,7 @@
 {
-  "name": "idleformulas",
+  "name": "someidlegame",
   "version": "0.1.0",
-  "homepage": "https://Zilvarro.github.io/idleformulas",
+  "homepage": "https://Zilvarro.github.io/someidlegame",
   "private": true,
   "license": "GPL-3.0-or-later",
   "dependencies": {

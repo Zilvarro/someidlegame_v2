@@ -3,7 +3,7 @@ export default function AlphaUpgradeButton({state, popup, upgrade, updateState})
     if (upgrade.fixed) return upgrade.fixed
 
     const clickAlphaUpgrade = ()=>{
-        if (state.alphaUpgrades[upgrade.id]) {
+        if (state.alphaUpgradesBought[upgrade.id]) {
             popup.alert(<>{upgrade.title}<br/><br/>{upgrade.description}<br/><br/>ALREADY BOUGHT!</>, undefined, undefined, true)
         } else if (state.alpha < upgrade.cost) {
             popup.alert(<>{upgrade.title}<br/><br/>{upgrade.description}<br/><br/>Cost: {upgrade.cost} &alpha;</>, undefined, undefined, true)
@@ -14,9 +14,9 @@ export default function AlphaUpgradeButton({state, popup, upgrade, updateState})
         }
     }
 
-    const disabled = upgrade.requires && !state.alphaUpgrades[upgrade.requires]
+    const disabled = upgrade.requires && !state.alphaUpgradesBought[upgrade.requires]
     let backgroundColor
-    if (state.alphaUpgrades[upgrade.id]) {
+    if (state.alphaUpgradesBought[upgrade.id]) {
         backgroundColor = "#ff9999"
     } else if (disabled) {
         backgroundColor = "#444444"

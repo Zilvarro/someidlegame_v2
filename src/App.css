@@ -53,6 +53,15 @@ footer {
     /* background: lightblue */
 }
 
+ /* Create smaller column */
+.smallcolumn {
+    float: left;
+    min-width: 25%;
+    /* max-width: 60%; */
+    padding: 10px;
+    /* background: lightblue */
+}
+
 /* Clear floats after the columns */
 .row {
     width: "100%";

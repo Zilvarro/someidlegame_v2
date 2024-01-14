@@ -75,6 +75,78 @@ export const milestoneList = [
     description:<>State your greatest wish</>,
     check: (state)=>(state.completedEndings["worldselect"]),
     tier: 1,
+  },{
+    id:"World",
+    name:"Sleight of Hand",
+    description:<>Pick a card, any Card!</>,
+    check: (state)=>(!state.canBuyPerk),
+    tier: 2,
+  },{
+    id:"W2",
+    name:"Startling",
+    description:<>World Reset without using Starting Stones</>,
+    check: (state)=>(state.noStoneWorldReset),
+    tier: 2,
+  },{
+    id:"W3",
+    name:"W3",
+    description:<>World Milestone 3</>,
+    check: (state)=>(getChallengeBonus(state).full >= 1),
+    tier: 2,
+  },{
+    id:"W4",
+    name:"W4",
+    description:<>World Milestone 4</>,
+    check: (state)=>countAlphaUpgrades(state)>=9,
+    tier: 2,
+  },{
+    id:"W5",
+    name:"W5",
+    description:<>World Milestone 5</>,
+    check: (state)=>(state.researchLevel["x"] >= 2500 || state.researchLevel["x'"] >= 2500 || state.researchLevel["x''"] >= 2500 || state.researchLevel["x'''"] >= 2500),
+    tier: 2,
+  },{
+    id:"W6",
+    name:"W6",
+    description:<>World Milestone 6</>,
+    check: (state)=>(state.completedEndings["worldselect"]),
+    tier: 2,
+  },{
+    id:"Void",
+    name:"V1",
+    description:<>Void Milestone 1</>,
+    check: (state)=>(state.alphaUpgrades.SLOT || state.alphaUpgrades.AAPP || state.alphaUpgrades.AUNL),
+    tier: 3,
+  },{
+    id:"V2",
+    name:"V2",
+    description:<>Void Milestone 2</>,
+    check: (state)=>(state.researchLevel["x"] >= 100 && state.researchLevel["x'"] >= 100 && state.researchLevel["x''"] >= 100 && state.researchLevel["x'''"] >= 100),
+    tier: 3,
+  },{
+    id:"V3",
+    name:"V3",
+    description:<>Void Milestone 3</>,
+    check: (state)=>(getChallengeBonus(state).full >= 1),
+    tier: 3,
+  },{
+    id:"V4",
+    name:"V4",
+    description:<>Void Milestone 4</>,
+    check: (state)=>countAlphaUpgrades(state)>=9,
+    tier: 3,
+  },{
+    id:"V5",
+    name:"V5",
+    description:<>Void Milestone 5</>,
+    check: (state)=>(state.researchLevel["x"] >= 2500 || state.researchLevel["x'"] >= 2500 || state.researchLevel["x''"] >= 2500 || state.researchLevel["x'''"] >= 2500),
+    tier: 3,
+  },{
+    id:"V6",
+    name:"V6",
+    description:<>Void Milestone 6</>,
+    check: (state)=>(state.completedEndings["worldselect"]),
+    tier: 3,
   },
 ]
 
@@ -133,6 +205,20 @@ export const layerList = [
     tier: 1,
   },
   {
+    id:"WORLD",
+    name:"WORLD",
+    description: "New Layer Unlocked",
+    check: (state)=>(state.essence >= 1),
+    tier: 2,
+  },
+  {
+    id:"VOID",
+    name:"VOID",
+    description: "New Layer Unlocked",
+    check: (state)=>(state.energy >= 1),
+    tier: 3,
+  },
+  {
     id:"DESTINY",
     name:"DESTINY",
     description: "Wait there's more?",
@@ -168,7 +254,7 @@ function Milestone({milestone,isReached, state}) {
   if (state.progressionLayer < milestone.tier && state.destinyStars < 1)
     return undefined
 
-  const mileStoneColors=["#99FF99","#ff7777","#55ffbb","#663366","#ffff88"]
+  const mileStoneColors=["#99FF99","#ff7777","#44FFCC","#AA55AA","#ffff88"]
   return <li style={{margin:"5px", color: isReached ? mileStoneColors[milestone.tier] : "000000"}}>[{milestone.name}]&nbsp;&nbsp;{milestone.description}</li>
 }
 
@@ -178,7 +264,7 @@ function Ending({ending, isRevealed, isReached, state}) {
     return undefined
   if (!isReached && !isRevealed)
     return <li style={{margin:"5px", color: "#aaaaaa"}}>[{ending.teaseHeaderText || lastSlide.teaseHeaderText}]&nbsp;&nbsp;{ending.teaseTitle || lastSlide.teaseTitle}</li>
-  if (isReached || state.progressionLayer >= 2)
+  if (isReached || state.progressionLayer >= 4)
     return <li style={{margin:"5px", color:"#ffffff"}}>[{ending.headerText||lastSlide.headerText}]&nbsp;&nbsp;{ending.title || lastSlide.title}</li>
   return <li style={{margin:"5px", color:"#aaaaaa"}}>[{ending.headerText||lastSlide.headerText}]&nbsp;&nbsp;{ending.title || lastSlide.title}</li>
 }

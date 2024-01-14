@@ -62,8 +62,10 @@ export default function AlphaStartingStone({state, boundary,stone, popup, update
         }
     }
 
+    const description = (stone.description_alt && state.progressionLayer > 1) ? stone.description_alt : stone.description
+
     //Normal
     return (
-        <button disabled={disabled} title={stone.tooltip || ReactDOMServer.renderToString(stone.description)} onClick={clickStartingStone} style={buttonStyle}>{stone.title}<br/>{state.startingStoneLevel[stone.id] || <>&nbsp;</>}</button>
+        <button disabled={disabled} title={stone.tooltip || ReactDOMServer.renderToString(description)} onClick={clickStartingStone} style={buttonStyle}>{stone.title}<br/>{state.startingStoneLevel[stone.id] || <>&nbsp;</>}</button>
     )
 }

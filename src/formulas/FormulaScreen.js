@@ -105,6 +105,12 @@ export default function FormulaScreen({state, updateState, setTotalClicks, popup
       setTotalClicks((x)=>x+1)
     }
 
+    const performWorldReset = ()=>{
+      popup.confirm("Perform a World Reset?", ()=>{
+        updateState({name: "worldReset"})
+      }, state.settings.worldResetPopup === "OFF")
+    }
+
     const memorize = ()=>{
       popup.confirm("Save this loadout for later use?", ()=>{
         updateState({name: "memorize"})
@@ -148,6 +154,8 @@ export default function FormulaScreen({state, updateState, setTotalClicks, popup
     const hashtagF = state.myFormulas.some((formulaName)=>formulaList[formulaName].hashtagF)
     const hashtagE = state.myFormulas.some((formulaName)=>formulaList[formulaName].hashtagE)
 
+    const worldResetAvailable = state.progressionLayer >= 2 && state.xValue[3] === Infinity
+
     let displayFilter = ()=>true
     switch (state.settings.shopFilter) {
       case "DEFAULT":
@@ -183,7 +191,10 @@ export default function FormulaScreen({state, updateState, setTotalClicks, popup
             <ValueTable values={state.xValue} diffs={state.avgXPerSecond} baseName={"x"} maxTier={state.highestXTier} numberFormat={state.settings.numberFormat}/>
             <br/>
             {!state.insideChallenge && state.xValue[0] >= Infinity ?
-              <>{spaces()}<button onClick={getWorldFormula}><b>DISCOVER THE WORLD FORMULA</b></button><br/><br/></>
+              <>
+                {!worldResetAvailable && <>{spaces()}<button onClick={getWorldFormula}><b>DISCOVER THE WORLD FORMULA</b></button><br/><br/></>}
+                {worldResetAvailable && <>{spaces()}<button onClick={performWorldReset}><b>PERFORM WORLD RESET</b></button><br/><br/></>}
+              </>
             :
               <>{(state.progressionLayer > 0 || state.highestXTier > 0 || state.formulaUnlockCount >= 4) &&
                 <>{spaces()}<button style={{color:"black"}} onClick={resetXValues} disabled={state.activeChallenges.FULLYIDLE || state.activeChallenges.ONESHOT || !state.anyFormulaUsed}>Basic Reset</button>{state.progressionLayer === 0 && state.highestXTier === 0 && state.xResetCount === 0 && <span style={{color:"#00FF00", fontWeight:"bold"}}>{spaces()}&larr; Reset x, but you can adapt your equipped formulas.</span>}</>

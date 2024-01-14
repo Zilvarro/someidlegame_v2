@@ -724,14 +724,34 @@ export const mailDictionary = {
         check: (state)=>(state.xValue[0] > 200e24 && state.highestXTier >= 3),
         delay: 10000,
     },
+
+    //Storyline: World
+    "World":{
+      id: "World",
+      title: "Welcome to a new World",
+      content: <>New layer just started, yeay!</>,
+      sender: "World Dude",
+      check: (state)=>(state.progressionLayer >= 2),
+      delay: 8,
+      afterRead: ["Crystals"],
+    },
+    "Crystals":{
+        id: "Crystals",
+        title: "Buff Crystals",
+        content: <>You can now access Buff Crystals, yeay!</>,
+        responses: [<>UNLOCK BUFF CRYSTALS</>],
+        sender: "World Dude",
+        check: (state)=>(!state.canBuyPerk),
+        delay: 69,
+        afterComplete: [["Shortcut"]],
+    },
+    "Shortcut":{
+        id: "Shortcut",
+        title: "Shortcut taken",
+        content: <>You did a World Reset without using Starting Stones, yeay!</>,
+        sender: "World Dude",
+        check: (state)=>(state.noStoneWorldReset),
+        delay: 88,
+        afterComplete: [[]],
+    },
 }
-
-const worldformula = ["Warning", "What", "Who", "Still", "Formula", "Joined", "How", "Dangerous", "After", "Found", "Nothing"] //Formula Layer + Alpha Layer
-const academy = ["Welcome", "Research", "Challenges", "Stones", "MythicalStones", "Maxxed", "Idle", "God", "MaxStones", "Hint", "TrueHint"] //Alpha Layer
-const homework = ["Homework", "Learn", "Important", "Refuse", "Klausi", "Henry", "Powerful", "Tommy", "Jimmy", "Gary", "Thx", "Profit", "Children"] //Alpha Layer
-
-const prince = ["Prince", "Transfer", "Failed", "Virus", "Sent", "Rich"] //Formula Layer
-const xmail = ["Prime", "Advantages", "Premium"] //Formula Layer
-const marketresearch = ["Survey", "Submitted", "Results"] //Alpha Layer
-
-export const mailList = Array.prototype.concat.apply([], [worldformula, academy, homework, prince, marketresearch, xmail])
