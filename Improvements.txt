@@ -8,7 +8,6 @@ LOW: Tab Navigation with Hotkeys (Arrow Keys?)
 LOW: Decrease Formula Confirmation should show target differential
 LOW: Favorite Dropdown cancels Hotkey (=> May need better hotkey package)
 LOW: Rework per Second Display (accurate calculation instead of average over last ticks)
-LOW: Per Second Display should reflect Auto Applier at 2 applies per second
 LOW: Explain tick order in detail (Maybe glossary or just a mail)
 
 ~~~~~~~~~~~ALPHA~~~~~~~~~~~

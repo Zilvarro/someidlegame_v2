@@ -16,6 +16,7 @@ import { alphaUpgradeDictionary, autoAlphaUpgrades } from "./alpha/AlphaUpgradeD
 import { alphaChallengeDictionary, alphaChallengeTable, calcChallengePower, trivialStartChallenges } from "./alpha/AlphaChallengeTab";
 import { getCrystalChargeInfo, getCrystalChargeSpeed, getCrystalEffectUpgradeCost, getCrystalMultiplier, getCrystalSpeedUpgradeCost } from "./world/WorldCrystalTab";
 import { worldPerkDeck } from "./world/WorldPerkDictionary";
+import { worldSpellDictionary } from "./world/WorldSpellDictionary";
 
 export const majorversion = "2d"
 export const version = "2.00d"
@@ -131,6 +132,17 @@ export const newSave = {
     crystalExp: 0,
     crystalEffectLevel: 0,
     crystalSpeedLevel: 0,
+    activeRitual: "",
+    selectedRitual: "",
+    clearedRituals: {},
+    ritualProgress: 0,
+    spellsPerformed: 0,
+    spellBook: {},
+    spell: "",
+    lastSpell: "",
+    lastSpellState: "",
+    spellCooldown: 0,
+    sacrificeLevel: 0,
     currentEnding: "",
     completedEndings: {},
     allTimeEndings: {},
@@ -828,6 +840,9 @@ export const saveReducer = (state, action)=>{
           state.crystalExp += deltaMilliSeconds * speed
         }
 
+        //Cooldown for Incantation Spells
+        state.spellCooldown = Math.max(0, state.spellCooldown - deltaMilliSeconds)
+
         //Auto Resetters
         const alphaThreshold = alphaThresholds[state.settings.alphaThreshold] || alphaTarget
 
@@ -1154,6 +1169,7 @@ export const saveReducer = (state, action)=>{
                 state.mailsCompleted["Perks"] = 0 
                 state.mailsCompleted["Crystals"] = 0 
                 state.mailsCompleted["Rituals"] = 0 
+                state.mailsCompleted["Mirrors"] = 0
                 notify.success("CHAPTER 7: VOID")
                 break;
             case "destiny":
@@ -1380,7 +1396,7 @@ export const saveReducer = (state, action)=>{
         break;
     case "toggleCrystal":
         const chargeInfo = getCrystalChargeInfo(state)
-        if (chargeInfo.charges < 1) break
+        if (!chargeInfo.isCharged) break
 
         state.crystalMultipliers[action.crystal] ||= crystalStart
         state.crystalMultipliers[action.crystal] += chargeInfo.charges
@@ -1418,6 +1434,48 @@ export const saveReducer = (state, action)=>{
 
         state.xValue[0] -= xcost
         state.crystalEffectLevel++
+        break;
+    case "changeSpell":
+        state.spell = action.text.toLowerCase().replace(/[^0-9a-z]/gi, '')
+        break;
+    case "chantSpell":
+        if (state.spellCooldown > 0) break
+        state.lastSpell = state.spell
+        const spellid = state.spell.toLowerCase().replace(/[^0-9a-z]/gi, '')
+        const spell = worldSpellDictionary[spellid]
+        state.spell = ""
+        if (spell && state.spellBook[spell.id]) {
+          state.lastSpellState = "REPEAT"
+          state.spellCooldown = 30000 / getGlobalMultiplier(state)
+        } else if (spell) {
+          state.spellsPerformed++
+          state.lastSpellState = "SUCCESS"
+          state.spellBook[spell.id] = true
+          state.spellCooldown = 300000 * state.spellsPerformed / getGlobalMultiplier(state)
+        } else {
+          state.lastSpellState = "FAILURE"
+          state.spellCooldown = 30000 / getGlobalMultiplier(state)
+        }
+        break;
+    case "makeSacrifice":
+        const sacrificeCost = Math.pow(3,state.sacrificeLevel)
+        if (state.essence < sacrificeCost) break
+        state.essence -= sacrificeCost
+        state.sacrificeLevel++
+        break;
+    case "selectRitual":
+        if (state.selectedRitual === action.ritualid)
+          state.selectedRitual = ""
+        else
+          state.selectedRitual = action.ritualid
+        break;
+    case "startRitual":
+        state.activeRitual = action.ritualid
+        state.selectedRitual = action.ritualid
+        break;
+    case "exitRitual":
+        state.activeRitual = ""
+        state.selectedRitual = ""
         break;
     default:
         console.error("Action " + action.name + " not found.")

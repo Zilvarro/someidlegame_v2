@@ -3,6 +3,7 @@ import TabContent from '../TabContent'
 import WorldPerkTab from './WorldPerkTab'
 import WorldCrystalTab from './WorldCrystalTab'
 import WorldRitualTab from './WorldRitualTab'
+import WorldMirrorTab from './WorldMirrorTab'
 
 export default function WorldScreen({state, popup, updateState, setTotalClicks}) {
       
@@ -16,10 +17,12 @@ return (
         <button style={{marginLeft: "20px"}} onClick={()=>setWorldTab("WorldPerkTab")}>Perks</button>&nbsp;
         {state.mailsCompleted["Crystals"] !== undefined && <><button onClick={()=>setWorldTab("WorldCrystalTab")}>Crystals</button>&nbsp;</>} 
         {state.mailsCompleted["Rituals"] !== undefined && <><button onClick={()=>setWorldTab("WorldRitualTab")}>Rituals</button>&nbsp;</>}
+        {state.mailsCompleted["Mirrors"] !== undefined && <><button onClick={()=>setWorldTab("WorldMirrorTab")}>Mirrors</button>&nbsp;</>}
         <TabContent selectedTabKey={state.selectedWorldTabKey}>
           <WorldPerkTab tabKey="WorldPerkTab" popup={popup} state={state} updateState={updateState} setTotalClicks={setTotalClicks}/>
           <WorldCrystalTab tabKey="WorldCrystalTab" popup={popup} state={state} updateState={updateState} setTotalClicks={setTotalClicks}/>
           <WorldRitualTab tabKey="WorldRitualTab" popup={popup} state={state} updateState={updateState} setTotalClicks={setTotalClicks}/>
+          <WorldMirrorTab tabKey="WorldMirrorTab" popup={popup} state={state} updateState={updateState} setTotalClicks={setTotalClicks}/>
         </TabContent>
     </div>)
 }

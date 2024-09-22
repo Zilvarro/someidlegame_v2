@@ -545,6 +545,28 @@ export const endingList = {
         endingName:"timeout",
         instaDestiny:true,
     }]},
+    ritual: {titlestring: "Ritual Failed", actions:[{
+        title: "Ritual Failed",
+        teaseTitle:"?????? ??????",
+        durationSeconds: 3,
+        headerText: <>~Bad Ending~</>,
+        teaseHeaderText: <>~??? ??????~</>,
+        storyText: <>Rituals are intricate performances of mystery and magic.<br/>Doing them the wrong way can have unforeseen consequences!</>,
+        final:true,
+        endingName:"timeout",
+        instaDestiny:true,
+    }]},
+    euthanasia: {titlestring: "Euthanasia", actions:[{
+        title: "Euthanasia",
+        teaseTitle:"??????????",
+        durationSeconds: 3,
+        headerText: <>~Bad Ending~</>,
+        teaseHeaderText: <>~??? ??????~</>,
+        storyText: <>Your wish has been granted!<br/>Be careful what you wish for!</>,
+        final:true,
+        endingName:"euthanasia",
+        instaDestiny:true,
+    }]},
 }
 
-export const orderedEndings = ["timeout","divide","imaginary","logarithm","infinite","negative","good","evil","skipped","true"]
+export const orderedEndings = ["timeout","divide","imaginary","logarithm","infinite","negative","ritual","euthanasia","good","evil","skipped","true"]
