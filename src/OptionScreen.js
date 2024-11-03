@@ -117,6 +117,10 @@ export default function OptionScreen({state, popup, updateState, setTotalClicks}
     updateState({name: "chapterJump", password: password})
   }
 
+  const devMode = ()=>{
+    updateState({name: "chapterJump", password: "DEVTEST"})
+  }
+
   return (<div style={{marginLeft: "20px"}}>
     <h1>Options</h1>
       <p>
@@ -258,6 +262,9 @@ export default function OptionScreen({state, popup, updateState, setTotalClicks}
 
       {state.xValue[0] === 0 && state.mileStoneCount === 0 && ((window.location.href.split("/").pop() === "?newgame")||!productive) &&<p>
         {spaces()}<button onClick={chapterJump}>Chapter Jump</button>
+      </p>}
+      {(!productive) &&<p>
+        {spaces()}<button onClick={devMode}>Dev Mode</button>
       </p>}
       <br/>
       <p>Version:&nbsp;&nbsp;{version}{!productive && <>&nbsp;&nbsp;[Development Build]</>}</p>

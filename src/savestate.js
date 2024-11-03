@@ -16,7 +16,7 @@ import { alphaUpgradeDictionary, autoAlphaUpgrades } from "./alpha/AlphaUpgradeD
 import { alphaChallengeDictionary, alphaChallengeTable, calcChallengePower, trivialStartChallenges } from "./alpha/AlphaChallengeTab";
 import { getCrystalChargeInfo, getCrystalChargeSpeed, getCrystalEffectUpgradeCost, getCrystalMultiplier, getCrystalSpeedUpgradeCost } from "./world/WorldCrystalTab";
 import { worldPerkDeck } from "./world/WorldPerkDictionary";
-import { worldSpellDictionary } from "./world/WorldSpellDictionary";
+import { checkStoryChant, validateChant } from "./world/WorldChantHelper";
 
 export const majorversion = "2d"
 export const version = "2.00d"
@@ -135,6 +135,7 @@ export const newSave = {
     activeRitual: "",
     selectedRitual: "",
     clearedRituals: {},
+    pendingChant: [0,1,2,3,4,5],
     ritualProgress: 0,
     spellsPerformed: 0,
     spellBook: {},
@@ -1195,12 +1196,17 @@ export const saveReducer = (state, action)=>{
                 break;
             case "DEVTEST":
                 if (productive) break
-                state.destinyStartTimeStamp = -2
-                state.destinyStars = 90
+                state.destinyStars = 0
+                state.progressionLayer = 2
                 state.mileStoneCount = 12
-                state.progressionLayer = 0
-                state.constellationCount = 10
-                state.mailsForCheck.push("Destiny")
+                state.essence = 1
+                state.mailsForCheck = ["World"]
+                state.mailsCompleted["Crystals"] = 0 
+                state.mailsCompleted["Rituals"] = 0 
+                state.mailsCompleted["Favorites"] = 0 
+                state.mailsCompleted["Research"] = 0 
+                state.mailsCompleted["Challenges"] = 0 
+                state.mailsCompleted["Stones"] = 0 
                 notify.success("DEVTEST")
                 break;
             default:
@@ -1435,27 +1441,35 @@ export const saveReducer = (state, action)=>{
         state.xValue[0] -= xcost
         state.crystalEffectLevel++
         break;
-    case "changeSpell":
-        state.spell = action.text.toLowerCase().replace(/[^0-9a-z]/gi, '')
+    case "addPhrase":
+        state.pendingChant.push(action.id)
+        break;
+    case "resetChant":
+        state.pendingChant = []
         break;
     case "chantSpell":
         if (state.spellCooldown > 0) break
-        state.lastSpell = state.spell
-        const spellid = state.spell.toLowerCase().replace(/[^0-9a-z]/gi, '')
-        const spell = worldSpellDictionary[spellid]
-        state.spell = ""
-        if (spell && state.spellBook[spell.id]) {
-          state.lastSpellState = "REPEAT"
-          state.spellCooldown = 30000 / getGlobalMultiplier(state)
-        } else if (spell) {
-          state.spellsPerformed++
-          state.lastSpellState = "SUCCESS"
-          state.spellBook[spell.id] = true
-          state.spellCooldown = 300000 * state.spellsPerformed / getGlobalMultiplier(state)
-        } else {
-          state.lastSpellState = "FAILURE"
-          state.spellCooldown = 30000 / getGlobalMultiplier(state)
+        state.spellCooldown = 30000 / getGlobalMultiplier(state)
+
+        //Check for Ritual Chant
+        const storychant = checkStoryChant(state.pendingChant, state.activeRitual)
+        if (storychant.matched && storychant.isStart) {
+          //TODO World Reset if necessary
+          state.activeRitual = storychant.ritual.id
+          state.selectedRitual = storychant.ritual.id
+        } else if (storychant.matched && storychant.isEnd) {
+          //TODO check further Ritual Requirements
+          state.activeRitual = ""
+          state.selectedRitual = storychant.ritual.id
+          state.clearedRituals[storychant.ritual.id] = true
         }
+
+        //Validate for Generic Chant / Forbidden Bad Ending
+        const validation = validateChant(state.pendingChant)
+        if (validation.badending && !storychant.matched) {
+          state.currentEnding = validation.badending
+        }
+
         break;
     case "makeSacrifice":
         const sacrificeCost = Math.pow(3,state.sacrificeLevel)

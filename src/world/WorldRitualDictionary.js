@@ -1,64 +1,113 @@
+//Ommh Laa Mi Soos Fol Ku
+
 export const worldRitualDictionary = {
   "initiation": {
       id:"initiation",
-      titles: ["Ritual of Initiation", "R*tu*l *f In*tia*ton", "R**u** *f *n**ia**o*","****** ** **********"],
-      sacTitles: [3,2,1,0],
-      effects: ["Unlocks Incantations", "*nl*c** I*c**ta**o*s", "*n**c** **c***a****s", "******* ************"],
-      sacEffects: [4,3,2,0],
-      steps: [["Step1", "S**p1", "****1", "*****"],["Step2", "S**p2", "****2", "*****"],["Step3", "S**p3", "****3", "*****"]],
-      sacSteps: [[3,2,1,0],[3,2,1,0],[3,2,1,0]],
+      startChant: [0,1,0,2,1,0,0], 
+      endChant: [2,2,1,1,2,2],
+      title: "Ritual of Initiation",
+      effect: "Sacrifices grant Liberty Stones",
+      steps: [["Chant \"Ommh Laa Ommh Mi Laa Ommh Ommh\""],["Something"],["Chant \"Mi Mi Laa Laa Mi Mi\""]],
+      sacSteps: [[0],[0],[0]],
   },
-  "second": {
-      id:"second",
-      titles: ["Second Ritual", "Second Ritual", "Second Ritual", "Second Ritual"],
-      sacTitles: [3,2,1,0],
-      effects: ["Unlocks Incantations", "*nl*c** I*c**ta**o*s", "*n**c** **c***a****s", "******* ************"],
-      sacEffects: [4,3,2,0],
-      steps: [["Step1", "S**p1", "****1", "*****"],["Step2", "S**p2", "****2", "*****"],["Step3", "S**p3", "****3", "*****"]],
-      sacSteps: [[3,2,1,0],[3,2,1,0],[3,2,1,0]],
+  "mystery": {
+      id:"mystery",
+      title: "Mysterious Ritual",
+      startChant: [0,1,0,2,1,0,0], 
+      endChant: [2,2,1,1,2,2],
+      effect: "Sacrifices boost Formula Efficiency",
+      steps: [["Chant \"Ommh Laa Ommh Mi Laa Ommh Ommh\""],["Something"],["Chant \"Mi Mi Laa Laa Mi Mi\""]],
+      sacSteps: [[0],[0],[0]],
   },
-  "third": {
-      id:"third",
-      titles: ["Third Ritual", "Third Ritual", "Third Ritual", "Third Ritual"],
-      sacTitles: [3,2,1,0],
-      effects: ["Unlocks Incantations", "*nl*c** I*c**ta**o*s", "*n**c** **c***a****s", "******* ************"],
-      sacEffects: [4,3,2,0],
-      steps: [["Step1", "S**p1", "****1", "*****"],["Step2", "S**p2", "****2", "*****"],["Step3", "S**p3", "****3", "*****"]],
-      sacSteps: [[3,2,1,0],[3,2,1,0],[3,2,1,0]],
+  "automatic": {
+      id:"automatic",
+      title: "Automatic Ritual",
+      startChant: [0,1,0,2,1,0,0], 
+      endChant: [2,2,1,1,2,2],
+      effect: "Sacrifices boost all x-Production",
+      steps: [["Chant \"Ommh Laa Ommh Mi Laa Ommh Ommh\""],["Something"],["Chant \"Mi Mi Laa Laa Mi Mi\""]],
+      sacSteps: [[0],[0],[0]],
   },
-  "fourth": {
-      id:"fourth",
-      titles: ["Fourth Ritual", "Fourth Ritual", "Fourth Ritual", "Fourth Ritual"],
-      sacTitles: [3,2,1,0],
-      effects: ["Unlocks Incantations", "*nl*c** I*c**ta**o*s", "*n**c** **c***a****s", "******* ************"],
-      sacEffects: [4,3,2,0],
-      steps: [["Step1", "S**p1", "****1", "*****"],["Step2", "S**p2", "****2", "*****"],["Step3", "S**p3", "****3", "*****"]],
-      sacSteps: [[3,2,1,0],[3,2,1,0],[3,2,1,0]],
+  "beta": {
+      id:"beta",
+      title: "True Beta Ritual",
+      startChant: [0,1,0,2,1,0,0], 
+      endChant: [2,2,1,1,2,2],
+      effect: "Sacrifices boost passive Alpha Gain",
+      steps: [["Chant \"Ommh Laa Ommh Mi Laa Ommh Ommh\""],["Something"],["Chant \"Mi Mi Laa Laa Mi Mi\""]],
+      sacSteps: [[0],[0],[0]],
   },
-  "fifth": {
-      id:"fifth",
-      titles: ["Fifth Ritual", "Fifth Ritual", "Fifth Ritual", "Fifth Ritual"],
-      sacTitles: [3,2,1,0],
-      effects: ["Unlocks Incantations", "*nl*c** I*c**ta**o*s", "*n**c** **c***a****s", "******* ************"],
-      sacEffects: [4,3,2,0],
-      steps: [["Step1", "S**p1", "****1", "*****"],["Step2", "S**p2", "****2", "*****"],["Step3", "S**p3", "****3", "*****"]],
-      sacSteps: [[3,2,1,0],[3,2,1,0],[3,2,1,0]],
+  "manual": {
+      id:"manual",
+      title: "Manual Ritual",
+      startChant: [0,1,0,2,1,0,0], 
+      endChant: [2,2,1,1,2,2],
+      effect: "Sacrifices boost all X-Production",
+      steps: [["Chant \"Ommh Laa Ommh Mi Laa Ommh Ommh\""],["Something"],["Chant \"Mi Mi Laa Laa Mi Mi\""]],
+      sacSteps: [[0],[0],[0]],
   },
 
   "dark": {
       id:"dark",
-      titles: ["The Dark Ritual", "T*e *ar* **t**l", "**e **r* *****l","*** **** ******"],
-      sacTitles: [12,8,4,0],
-      effects: ["Unknown, perform at your own risk!", "Unknown, perform at your own risk!", "Unknown, perform at your own risk!", "Unknown, perform at your own risk!"],
-      sacEffects: [4,3,2,0],
-      steps: [["Step1", "S**p1", "****1", "*****"],["Step2", "S**p2", "****2", "*****"],["Step3", "S**p3", "****3", "*****"]],
-      sacSteps: [[3,2,1,0],[3,2,1,0],[3,2,1,0]],
+      title: "The Dark Ritual",
+      startChant: [0,1,0,2,1,0,0], 
+      endChant: [2,2,1,1,2,2],
+      effect: "Unknown Effects, perform at your own risk!",
+      steps: [["Chant \"Ommh Laa Ommh Mi Laa Ommh Ommh\""],["Something"],["Chant \"Mi Mi Laa Laa Mi Mi\""]],
+      sacSteps: [[0],[0],[0]],
   },
-
 }
 
-export const worldRitualTable = [["initiation", "second", "third"], ["fourth", "fifth", "dark"]]
-export const worldRitualList = ["initiation", "second", "third", "fourth", "fifth", "dark"]
+export const WorldPhraseList = [
+  {
+    id: 0,
+    phrase: "Fol",
+    hiddenphrase: "???",
+    size: 3,
+    requirement: 0,
+  },
+  {
+    id: 1,
+    phrase: "Ku",
+    hiddenphrase: "??",
+    size: 2,
+    requirement: 0,
+  },
+  {
+    id: 2,
+    phrase: "Laa",
+    hiddenphrase: "???",
+    size: 3,
+    requirement: 0,
+  },
+  {
+    id: 3,
+    phrase: "Mi",
+    hiddenphrase: "??",
+    size: 2,
+    requirement: 0,
+  },
+  {
+    id: 4,
+    phrase: "Ommh",
+    hiddenphrase: "????",
+    size: 4,
+    requirement: 0,
+  },
+  {
+    id: 5,
+    phrase: "Soos",
+    hiddenphrase: "????",
+    size: 4,
+    requirement: 0,
+  },
+
+
+]
+
+export const worldRitualTable = [["initiation", "mystery", "automatic"], ["beta", "manual", "dark"]]
+export const worldRitualList = ["initiation", "mystery", "automatic", "beta", "manual", "dark"]
+
 export const getRitualView = (ritualid, state)=>{
   if (!ritualid) return undefined
   const ritual = worldRitualDictionary[ritualid]
@@ -66,8 +115,8 @@ export const getRitualView = (ritualid, state)=>{
   const sacIndex = (arr)=>arr.findIndex((s)=>(s<=sacrifices))
   const ritualview = {
     id: ritual.id,
-    title: ritual.titles[sacIndex(ritual.sacTitles)],
-    effect: ritual.effects[sacIndex(ritual.sacEffects)],
+    title: ritual.title,
+    effect: ritual.effect,
     steps: ritual.steps.map((step, index)=>step[sacIndex(ritual.sacSteps[index])]),
   }
   return ritualview

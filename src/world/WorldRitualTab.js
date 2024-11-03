@@ -1,7 +1,7 @@
 import { formatNumber, secondsToHms } from "../utilities"
 import WorldRitualButton from "./WorldRitualButton"
-import { getRitualView, worldRitualTable } from "./WorldRitualDictionary"
-import { worldSpellList } from "./WorldSpellDictionary"
+import { getRitualView, WorldPhraseList, worldRitualTable } from "./WorldRitualDictionary"
+
 
 export default function WorldRitualTab({state, updateState, popup}) {
 
@@ -9,12 +9,12 @@ export default function WorldRitualTab({state, updateState, popup}) {
     updateState({name:"chantSpell"})
   }
 
-  const makeSacrifice = ()=>{
-    updateState({name:"makeSacrifice"})
+  const resetChant = ()=>{
+    updateState({name:"resetChant"})
   }
 
-  const onSpellChange = (e)=>{
-    updateState({name:"changeSpell", text: e.target.value})
+  const makeSacrifice = ()=>{
+    updateState({name:"makeSacrifice"})
   }
 
   const clickRitualStart = ()=>{
@@ -37,33 +37,35 @@ export default function WorldRitualTab({state, updateState, popup}) {
           {worldRitualTable.map((line, index)=><div key={index}>{line.map((ritualid)=><WorldRitualButton key={ritualid} ritualid={ritualid} state={state} updateState={updateState} popup={popup}/>)}</div> )}
           {selectedRitual && <>
             <p>{selectedRitual.title} {state.activeRitual && <button style={{color:"black"}} onClick={clickRitualExit}>Exit</button>}{!state.activeRitual && !state.clearedRituals[state.selectedRitual] && <button style={{color:"black"}} onClick={clickRitualStart}>Start</button>}</p>
-            {selectedRitual.steps.map((step,index)=><div key={index}>{step}</div>)}
+            {selectedRitual.steps.map((step,index)=><div key={index}>{step}</div>)}<br/>
+            Effect: {selectedRitual.effect}
           </>}
+      </div><div className="smallcolumn">
+        <h2>Incantations</h2>
+          <PendingChant state={state}/><br/><br/>
+          <PhraseButton id={4} state={state} updateState={updateState}/>&nbsp;<PhraseButton id={2} state={state} updateState={updateState}/>&nbsp;<PhraseButton id={3} state={state} updateState={updateState}/><br/><br/>
+          <PhraseButton id={5} state={state} updateState={updateState}/>&nbsp;<PhraseButton id={0} state={state} updateState={updateState}/>&nbsp;<PhraseButton id={1} state={state} updateState={updateState}/><br/><br/>
+          <button style={{color:"black", fontWeight: "bold"}} disabled={state.spellCooldown > 0} onClick={chantSpell}>{state.spellCooldown > 0 ? <>Wait {secondsToHms(state.spellCooldown / 1000)}</> : <>CHANT</>}</button>&nbsp;
+          <button style={{color:"black", fontWeight: "bold"}} onClick={resetChant}><>RESET</></button><br/><br/>
       </div><div className="smallcolumn">
         <h2>Sacrifices</h2>
           <button style={{color:"black"}} disabled={state.essence < sacrificeCost} onClick={makeSacrifice}>Sacrifice {formatNumber(sacrificeCost, state.numberFormat, 2)} &omega;</button><br/><br/>
           You have made {state.sacrificeLevel} sacrifices.
-      </div><div className="smallcolumn">
-        <h2>Incantations</h2>
-          <input value={state.spell} onChange={onSpellChange} maxLength="20"/>&nbsp;
-          <button style={{color:"black"}} disabled={state.spellCooldown > 0} onClick={chantSpell}>{state.spellCooldown > 0 ? <>Wait {secondsToHms(state.spellCooldown / 1000)}</> : <>Chant</>}</button><br/><br/>
-          {state.spellCooldown > 0 && state.lastSpellState === "SUCCESS" && <>You chanted "{state.lastSpell}". It was a resounding success!</>}
-          {state.spellCooldown > 0 && state.lastSpellState === "REPEAT" && <>You chanted "{state.lastSpell}" again!</>}
-          {state.spellCooldown > 0 && state.lastSpellState === "FAILURE" && <>You chanted "{state.lastSpell}" but nothing happened!</>}
-          <br/><br/>Your {state.spellsPerformed} distinct incantations are multiplying your Formula Efficiency by x{formatNumber( 1.0 + state.spellsPerformed * 0.1, state.numberFormat, 2, true)}.
-          <br/><br/>
-          {state.spellsPerformed >= 5 && <details style={{paddingTop: "10px"}}>
-            <summary>
-              Spellbook
-            </summary>
-            <br/>
-            {worldSpellList.map((spellid)=>{
-              if (state.spellBook[spellid]) 
-                return <div style={{paddingLeft: "30px"}} key={spellid}>{spellid}<br/></div>
-              else
-                return undefined
-            })}
-          </details>}
       </div></div>
     </div>)
+}
+
+function PhraseButton({id, state, updateState}) {
+  const phrase = WorldPhraseList[id]
+  const addPhrase = ()=>{
+    updateState({name:"addPhrase", id: id})
+  }
+  if (state.sacrificeLevel >= phrase.requirement)
+    return <button disabled={state.pendingChant.length >= 10} style={{color:"black"}} onClick={()=>addPhrase(phrase)}>{phrase.phrase}</button>
+  else
+    return <button disabled style={{color:"black"}}>{phrase.hiddenphrase}</button>
+}
+
+function PendingChant({state}) {
+  return <>{state.pendingChant.map((phraseid)=>(WorldPhraseList[phraseid].phrase + " "))}</>
 }

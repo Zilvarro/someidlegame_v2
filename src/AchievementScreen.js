@@ -107,8 +107,8 @@ export const milestoneList = [
     tier: 2,
   },{
     id:"W6",
-    name:"W6",
-    description:<>World Milestone 6</>,
+    name:"Forbidden Fruit",
+    description:<>Perform the Dark Ritual</>,
     check: (state)=>(state.completedEndings["worldselect"]),
     tier: 2,
   },{
