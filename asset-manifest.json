@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/someidlegame/static/css/main.618470ab.css",
-    "main.js": "/someidlegame/static/js/main.d94351ab.js",
-    "service-worker.js": "/someidlegame/service-worker.js",
-    "static/media/AstroDotBasic.ttf": "/someidlegame/static/media/AstroDotBasic.1e9941d39ecdb0a55023.ttf",
-    "index.html": "/someidlegame/index.html"
+    "main.css": "/someidlegame_v2/static/css/main.b0e17633.css",
+    "main.js": "/someidlegame_v2/static/js/main.ab50f47e.js",
+    "service-worker.js": "/someidlegame_v2/service-worker.js",
+    "static/media/AstroDotBasic.ttf": "/someidlegame_v2/static/media/AstroDotBasic.1e9941d39ecdb0a55023.ttf",
+    "index.html": "/someidlegame_v2/index.html"
   },
   "entrypoints": [
-    "static/css/main.618470ab.css",
-    "static/js/main.d94351ab.js"
+    "static/css/main.b0e17633.css",
+    "static/js/main.ab50f47e.js"
   ]
 }
