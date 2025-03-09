@@ -1,0 +1,29 @@
+{
+  "short_name": "Idle Formulas",
+  "name": "Idle Formulas",
+  "description": "An idle game about maximizing the value of x and striving for the most powerful of formulas.",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#111111",
+  "background_color": "#111111",
+  "icons": [
+    {
+      "src": "IconAppDownloadMask.png", 
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    },
+    {
+      "src": "IconAppDownload.png", 
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    }
+  ],
+  "orientation": "any",
+  "screenshots": [],
+  "shortcuts": [],
+  "dir": "ltr",
+  "scope": "https://zilvarro.github.io/idleformulas",
+  "lang": "en"
+}
