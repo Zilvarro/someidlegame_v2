@@ -144,6 +144,10 @@ export const newSave = {
     lastSpellState: "",
     spellCooldown: 0,
     sacrificeLevel: 0,
+    sacHighestX: 0,
+    sacHighestAlpha: 0,
+    sacHighestEssence: 0,
+    sacChantCount: 0,
     currentEnding: "",
     completedEndings: {},
     allTimeEndings: {},
@@ -356,11 +360,11 @@ const performAlphaReset = (state)=>{
     return state
 }
 
-const performWorldReset = (state)=>{
+const performWorldReset = (state, essence)=>{
   if (state.noStoneUsed)
     state.noStoneWorldReset = true
   state.bestWorldTime = Math.min(state.bestWorldTime, state.currentWorldTime)
-  state.essence++
+  state.essence += essence
   
   state.currentWorldTime = 0
   state.alpha = 0
@@ -974,6 +978,18 @@ export const saveReducer = (state, action)=>{
         if (state.worldPerks.AURS)
           researchAll(state)
 
+        //Sacrifices
+        if (state.progressionLayer >= 2) {
+          //Highscores
+          if (!state.inNegativeSpace)
+            state.sacHighestX = Math.max(state.sacHighestX, state.xValue[0])
+          state.sacHighestAlpha = Math.max(state.sacHighestAlpha, state.alpha)
+          state.sacHighestEssence = Math.max(state.sacHighestEssence, state.essence)
+
+          //Sacrificial Progress
+          //TODO get Sacrifice Targets and make progress
+        }
+
         break;
     case "selectTab":
         state.selectedTabKey = action.tabKey
@@ -1075,7 +1091,8 @@ export const saveReducer = (state, action)=>{
         rememberLoadout(state)
         break;
     case "worldReset":
-      performWorldReset(state)
+      const essence = action.essence
+      performWorldReset(state, essence)
       break;
     case "getAlpha":
       state.alpha += action.reward
@@ -1340,7 +1357,7 @@ export const saveReducer = (state, action)=>{
         state.currentEnding = ""
         if (action.endingName === "world" && state.progressionLayer < 2) {
             state.progressionLayer = 2
-            performWorldReset(state)
+            performWorldReset(state,1)
         } else if (action.endingName === "good" || action.endingName === "evil" || action.endingName === "true" || action.endingName === "skipped" || action.endingName === "world") {
             performAlphaReset(state)
             performShopReset(state)

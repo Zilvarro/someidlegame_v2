@@ -1,4 +1,4 @@
-import { formatNumber, secondsToHms } from "../utilities"
+import { formatNumber, logB, secondsToHms } from "../utilities"
 import WorldPerkButton from "./WorldPerkButton"
 import { worldPerkDeck, worldPerkDictionary } from "./WorldPerkDictionary"
 
@@ -21,10 +21,14 @@ export default function WorldPerkTab({state, updateState, popup}) {
   //Liberty Stones
   //Advanced Research
   
+  const essenceOnReset = (alpha)=>{
+    if (alpha < 1e12) return 1
+    return Math.floor(Math.pow(logB(10, alpha/1e12),2))
+  }
 
   const resetWorld = ()=>{
     popup.confirm("Perform a World Reset?", ()=>{
-      updateState({name: "worldReset"})
+      updateState({name: "worldReset", essence: essenceOnReset(state.alpha)})
     }, state.settings.worldResetPopup === "OFF")
   }
 
@@ -59,7 +63,7 @@ export default function WorldPerkTab({state, updateState, popup}) {
           </div><div className="smallcolumn">
           <h2>Info</h2>
           <p>You have {formatNumber(state.essence, state.settings.numberFormat,2)} World Essence!</p>
-          {state.worldResetEnabled ? <>Reset for 1 World Essence <button onClick={resetWorld}>&omega;-Reset</button></>: <p>Reach x'''=Infinity to enable World Reset!</p>}
+          {state.worldResetEnabled || state.alpha >= 1e12 ? <>Reset for {essenceOnReset(state.alpha)} World Essence <button onClick={resetWorld}>&omega;-Reset</button></>: <p>Reach x'''=Infinity or &alpha;=1T to enable World Reset!</p>}
           <p>Time in current World run: {secondsToHms(state.currentWorldTime / 1000)}{state.isFullyIdleWorld && <> (Fully Idle)</>}</p>
           <p>Base &omega;-Reset Essence: {formatNumber(baseEssenceMultiplier,state.numberFormat,2)}&nbsp;&nbsp;<button style={{color:"black"}} disabled={state.essence < baseEssenceUpgradeCost} onClick={upgradeBaseEssence}>Triple for {formatNumber(baseEssenceUpgradeCost,state.numberFormat)} &omega;</button></p>
           {/* <p><button onClick={resetWorld}>World Reset</button></p> */}

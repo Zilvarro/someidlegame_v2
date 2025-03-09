@@ -29,6 +29,39 @@ export default function WorldRitualTab({state, updateState, popup}) {
   const activeRitual = getRitualView(state.activeRitual, state)
   const selectedRitual = getRitualView(state.selectedRitual, state)
 
+  const sacrificeTargets = [
+    {
+      level: 0,
+      x: 1e100,
+      a: 1e10,
+      w: 3,
+      c: 3,
+    },
+    {
+      level: 1,
+      x: 1e110,
+      a: 1e11,
+      w: 5,
+      c: 5,
+    },
+    {
+      level: 2,
+      x: 1e120,
+      a: 1e12,
+      w: 10,
+      c: 10,
+    },
+    {
+      level: 3,
+      x: 1e121,
+      a: 1e13,
+      w: 15,
+      c: 10,
+    },
+  ]
+
+  const sacrificeTarget = sacrificeTargets[state.sacrificeLevel]
+
   return (
     <div style={{marginLeft:"10px"}}>
       <div className="row" style={{marginTop:"0px"}}><div className="column" style={{marginRight:"30px"}}>
@@ -49,8 +82,12 @@ export default function WorldRitualTab({state, updateState, popup}) {
           <button style={{color:"black", fontWeight: "bold"}} onClick={resetChant}><>RESET</></button><br/><br/>
       </div><div className="smallcolumn">
         <h2>Sacrifices</h2>
-          <button style={{color:"black"}} disabled={state.essence < sacrificeCost} onClick={makeSacrifice}>Sacrifice {formatNumber(sacrificeCost, state.numberFormat, 2)} &omega;</button><br/><br/>
-          You have made {state.sacrificeLevel} sacrifices.
+          <button style={{color:"black"}} disabled={state.essence < sacrificeCost} onClick={makeSacrifice}>Sacrifice World</button><br/><br/>
+          You have made {state.sacrificeLevel} sacrifices.<br/>
+          Highest x: {state.sacHighestX} / {formatNumber(sacrificeTarget.x, state.numberFormat)}<br/>
+          Highest &alpha;: {state.sacHighestAlpha} / {formatNumber(sacrificeTarget.a, state.numberFormat)}<br/>
+          Highest &omega;: {state.sacHighestEssence} / {formatNumber(sacrificeTarget.w, state.numberFormat)}<br/>
+          Chants: {state.sacChantCount} / {formatNumber(sacrificeTarget.c, state.numberFormat)}<br/>
       </div></div>
     </div>)
 }
