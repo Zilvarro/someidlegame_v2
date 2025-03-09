@@ -19,7 +19,7 @@ import { worldPerkDeck } from "./world/WorldPerkDictionary";
 import { checkStoryChant, validateChant } from "./world/WorldChantHelper";
 
 export const majorversion = "2d"
-export const version = "2.00d"
+export const version = "2.04d"
 export const productive = false
 export var invitation = "efHyDkqGRZ"
 
